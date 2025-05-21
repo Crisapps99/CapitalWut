@@ -1,0 +1,4 @@
+pnpm add @heroicons/react
+
+
+npm install @worldcoin/mini-apps-ui-kit-react

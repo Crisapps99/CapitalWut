@@ -1,0 +1,329 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* src/app/globals.css o similar */
+
+/* Pool de Energía */
+.energy-pool-container {
+  width: 120px; /* Ancho del contenedor del pool */
+  height: 120px; /* Alto del contenedor del pool */
+  background-color: rgba(14, 165, 233, 0.1); /* sky-500 con baja opacidad */
+  border: 3px solid rgba(56, 189, 248, 0.7); /* sky-400 */
+  border-radius: 12px; /* Bordes redondeados */
+  position: relative;
+  overflow: hidden; /* Para que el relleno no se desborde visualmente */
+  box-shadow: inset 0 0 20px rgba(14, 165, 233, 0.3), 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.energy-pool-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(14, 165, 233, 0.9) 0%, rgba(56, 189, 248, 0.7) 70%, rgba(125, 211, 252, 0.5) 100%); /* Gradiente azul cielo */
+  transition: height 1.5s cubic-bezier(0.65, 0, 0.35, 1); /* Transición suave para la altura */
+  box-shadow: inset 0 -5px 10px rgba(10, 100, 150, 0.3);
+}
+
+/* Efecto de brillo en la superficie del "líquido" */
+.energy-pool-surface-glow {
+  position: absolute;
+  top: -2px; /* Ligeramente por encima para simular el borde del líquido */
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: rgba(173, 230, 255, 0.8); /* Blanco azulado brillante */
+  border-radius: 2px;
+  box-shadow: 0 0 8px 2px rgba(173, 230, 255, 0.7);
+  opacity: 0.8;
+}
+
+/* Marcas de nivel en el pool (opcional) */
+.energy-pool-markings {
+  position: absolute;
+  top: 0;
+  right: -30px; /* Fuera del contenedor principal */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: rgba(14, 165, 233, 0.8);
+  padding: 5px 0;
+}
+.energy-pool-markings span {
+  display: block;
+}
+
+
+/* Chispa de Energía que vuela hacia el pool */
+@keyframes flyAndMergeSpark {
+  0% {
+    opacity: 0;
+    /* Empieza desde arriba y un poco a la izquierda */
+    transform: translate(-80vw, -70vh) scale(0.3) rotate(0deg);
+  }
+  20% {
+    opacity: 0;
+    transform: translate(-20vw, -30vh) scale(1.5) rotate(90deg); /* Vuela hacia el centro */
+  }
+  /* Punto donde se acerca al pool (ajustar coordenadas si el pool no está centrado en viewport) */
+  70% {
+    opacity: 1;
+    /* Estos valores intentan apuntar al centro del .energy-pool-container */
+    /* Como .flying-energy-spark es hijo del body (o un contenedor fixed/absolute), */
+    /* sus transformaciones son relativas a ese contexto. */
+    /* Asumiendo que el pool está aproximadamente centrado y algo abajo: */
+    transform: translate(0vw, 10vh) scale(1) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    /* "Entra" en el pool y desaparece */
+    transform: translate(0vw, 20vh) scale(0.2) rotate(270deg);
+  }
+}
+
+.flying-energy-spark {
+  position: fixed; /* Fijo en el viewport para la animación */
+  top: 0; /* Controlado por transform */
+  left: 0; /* Controlado por transform */
+  
+  font-size: 3.5rem; /* Tamaño del emoji de chispa */
+  text-shadow: 0 0 10px gold, 0 0 20px orange;
+  
+  z-index: 100; /* Encima de todo durante la animación */
+  
+  /* Aplicar la animación */
+  animation: flyAndMergeSpark var(--contribution-animation-duration, 1.8s) cubic-bezier(0.5, 0, 0.5, 1) forwards;
+}
+/* Para pasar la duración desde JS (ya está en constante arriba) */
+:root {
+  --contribution-animation-duration: 1.8s; 
+}
+
+/* --- ESTILOS MODIFICADOS PARA LA ANIMACIÓN DE LA ESTRELLA Y EL POOL --- */
+
+/* Chispa de Energía que vuela hacia el pool - MODIFICADA */
+@keyframes flyAndMergeSpark {
+  0% {
+    opacity: 0;
+    /* Comienza más lejos y más arriba para un barrido amplio */
+    transform: translate(-70vw, -80vh) scale(0.2) rotate(-90deg);
+  }
+  20% {
+    opacity: 0.8; /* Aparece gradualmente */
+    /* Se mueve hacia una posición intermedia, aún fuera del centro */
+    transform: translate(-20vw, -40vh) scale(1.2) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    /* Vuela hacia el centro horizontal, pero aún alto, haciéndose más grande */
+    transform: translate(0vw, -25vh) scale(2) rotate(90deg); /* Aumentado el scale aquí */
+  }
+  80% {
+    opacity: 1;
+    /* Se acerca al área del pool comunitario.
+       Ajusta translateY si tu pool está más arriba o abajo.
+       0vw para X lo mantiene centrado horizontalmente.
+       Un Y positivo lo baja en la pantalla. */
+    transform: translate(0vw, 20vh) scale(1.5) rotate(180deg); /* Reducido un poco el scale al acercarse */
+  }
+  100% {
+    opacity: 0;
+    /* "Entra" en el pool (un poco más abajo) y desaparece encogiéndose */
+    transform: translate(0vw, 25vh) scale(0.1) rotate(270deg);
+  }
+}
+
+.flying-energy-spark {
+  position: fixed; /* Fijo en el viewport para la animación global */
+  top: 0; /* La posición real se controla con transform */
+  left: 0; /* La posición real se controla con transform */
+  
+  font-size: 4.5rem; /* Estrella considerablemente más grande */
+  color: white; /* Para asegurar que el emoji ✨ se renderice consistentemente si es un carácter */
+  text-shadow: 0 0 18px gold, 0 0 35px orange, 0 0 8px rgba(255, 165, 0, 0.7); /* Sombra más intensa */
+  
+  z-index: 1000; /* Muy alto para estar encima de casi todo durante la animación */
+  
+  /* Aplicar la animación */
+  animation: flyAndMergeSpark var(--contribution-animation-duration) cubic-bezier(0.4, 0.1, 0.6, 0.9) forwards; /* Ajustada la curva Bezier para un movimiento fluido */
+  pointer-events: none; /* Para que no capture eventos del mouse */
+}
+
+
+/* Estilos para el Pool de Energía (tomando las últimas definiciones que proporcionaste) */
+.energy-pool-container {
+  width: 100px; 
+  height: 150px;
+  background-color: rgba(14, 116, 144, 0.2); /* sky-700 con baja opacidad */
+  border: 2px solid rgba(56, 189, 248, 0.6); /* sky-400 */
+  border-radius: 10px 10px 60px 60px / 10px 10px 20px 20px; /* Forma de "vaso" más sutil */
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(14, 165, 233, 0.25), 0 4px 10px rgba(0,0,0,0.1);
+  margin-left: auto; /* Para centrarlo si su padre es flex/grid o tiene text-align:center */
+  margin-right: auto; /* Para centrarlo */
+}
+
+.energy-pool-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, 
+    rgba(14, 165, 233, 0.95) 0%,  /* sky-600 */
+    rgba(56, 189, 248, 0.85) 60%, /* sky-400 */
+    rgba(125, 211, 252, 0.7) 100% /* sky-300 */
+  );
+  transition: height 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+  box-shadow: inset 0 -3px 8px rgba(10, 100, 150, 0.2);
+}
+
+.energy-pool-surface-glow {
+  position: absolute;
+  top: -1px; 
+  left: -5%; 
+  width: 110%;
+  height: 3px;
+  background-color: rgba(224, 242, 254, 0.9); /* sky-100, más brillante */
+  border-radius: 50%; 
+  box-shadow: 0 0 10px 3px rgba(173, 230, 255, 0.8); 
+  opacity: 0.9;
+  filter: blur(1px);
+}
+
+.energy-pool-markings {
+  position: absolute;
+  top: 0;
+  right: -20px; 
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.6rem; 
+  color: rgba(255, 255, 255, 0.7); 
+  padding: 2px 0;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+.energy-pool-markings span:last-child { /* "MAX" */
+  position: absolute;
+  top: -4px; 
+}
+
+/* Efecto de pulso para el contenedor del pool al recibir contribución directa */
+@keyframes pulseStrongOnce {
+  0% { transform: scale(1); /* Usaremos el overlay para el brillo, no el transform aquí */ }
+  50% { transform: scale(1.03); /* Ligero scale al contenedor si se desea */ }
+  100% { transform: scale(1); }
+}
+/* La clase .animate-pulse-strong en el JSX está en un div overlay,
+   así que su animación debería afectar el brillo de ese overlay, no el scale del pool.
+   Si quieres que el pool escale, aplica la animación directamente al .energy-pool-container
+   o a la section#energy-pool-section.
+   El `box-shadow` para el pulso puede ir en el overlay también.
+   Si el `div` con `animate-pulse-strong` es el overlay con `bg-sky-300`,
+   podemos hacer que su opacidad pulse o su tamaño.
+   La clase .animate-pulse-strong ya la tenías en el JSX con esta animación:
+   <div className={`absolute inset-0 bg-sky-300 transition-opacity duration-700 ease-out ${pulsePool ? 'opacity-20 animate-pulse-strong' : 'opacity-0'}`}></div>
+   La animación pulseStrongOnce que definiste afecta transform y box-shadow.
+   Para un overlay, es mejor afectar opacidad o un brillo específico del overlay.
+*/
+@keyframes overlayPulse {
+  0%, 100% { opacity: 0; box-shadow: 0 0 20px 10px rgba(125, 211, 252, 0); }
+  50% { opacity: 0.25; box-shadow: 0 0 40px 20px rgba(125, 211, 252, 0.7); }
+}
+.animate-pulse-strong { /* Esta clase se aplica al overlay */
+  animation: overlayPulse 0.8s cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+
+/* Partículas para el efecto ambiental del pool */
+@keyframes driftAndFadeParticle {
+  0% { transform: translateY(0px) scale(1); opacity: 0; }
+  20%, 80% { opacity: 1; } 
+  100% { transform: translateY(-180px) scale(0.3); opacity: 0; } 
+}
+
+.pool-particle {
+  position: absolute;
+  bottom: 5%; 
+  background-color: rgba(173, 230, 252, 0.6); 
+  border-radius: 50%;
+  animation-name: driftAndFadeParticle;
+  animation-timing-function: linear; 
+  animation-iteration-count: infinite;
+  box-shadow: 0 0 5px rgba(173, 230, 252, 0.5); 
+}
+/* --- ESTILOS PARA LA TARJETA GIRATORIA --- */
+.flip-card-container {
+  perspective: 1200px; /* Aumenta la perspectiva para un efecto 3D más notable */
+  width: 100%; /* Ocupa el ancho disponible, limitado por max-w-md en el JSX */
+  /* La altura se adaptará al contenido de las caras, asegúrate que ambas caras tengan una altura definida o similar */
+}
+
+.flip-card {
+  width: 100%;
+  height: 100%; /* Asegura que el contenedor interno ocupe todo el espacio del flip-card-container si este tiene altura definida */
+  min-height: 380px; /* Establece una altura mínima para la tarjeta para asegurar espacio para el contenido */
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.3, 1.2, 0.7, 1); /* Transición más elástica */
+  cursor: pointer;
+}
+
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Oculta la cara trasera cuando no está visible */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around; /* Distribuye mejor el contenido verticalmente */
+  border-radius: 1.5rem; /* rounded-3xl como en el JSX */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* shadow-2xl o similar más pronunciada */
+  overflow: hidden; /* Importante para bordes redondeados y gradientes */
+  padding: 1.5rem; /* sm:p-8 en JSX, ajusta según necesidad */
+}
+
+.flip-card-front {
+  /* El fondo y otros estilos se aplican directamente en el JSX con clases de Tailwind */
+  /* e.g., bg-gradient-to-br from-sky-600 to-blue-700 */
+  z-index: 2; /* Asegura que la cara frontal esté inicialmente visible */
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  /* El fondo se aplica en el JSX, e.g., bg-gradient-to-br from-blue-700 to-sky-500 */
+  color: white;
+  z-index: 1;
+}
